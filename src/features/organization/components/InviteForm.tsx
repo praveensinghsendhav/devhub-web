@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from 'react';
-import { MailPlus, X } from 'lucide-react';
+import { Check, Copy, Link2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { INVITABLE_ROLES, type InvitableRole } from '@devhub/shared-types';
+import { INVITABLE_ROLES, type CreatedInvite, type InvitableRole } from '@devhub/shared-types';
 import { useCreateInvitesMutation } from '../organizationApi';
 import { extractErrorMessage } from '../../../store/apiBase';
 import { Button } from '../../../common/components/Button';
+import { copyText } from '../../../common/lib/clipboard';
 
 const MAX_EMAILS = 20;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,6 +29,28 @@ export function InviteForm() {
   const [draft, setDraft] = useState('');
   const [role, setRole] = useState<InvitableRole>('MEMBER');
   const [createInvites, { isLoading }] = useCreateInvitesMutation();
+  // Links are only returned once, so keep them on screen until the admin dismisses them.
+  const [created, setCreated] = useState<CreatedInvite[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  async function copyLink(invite: CreatedInvite) {
+    try {
+      await copyText(invite.inviteUrl);
+      setCopiedId(invite.id);
+      toast.success(`Link for ${invite.email} copied`);
+    } catch {
+      toast.error('Could not copy — select the link and copy it manually');
+    }
+  }
+
+  async function copyAll() {
+    try {
+      await copyText(created.map((invite) => `${invite.email}: ${invite.inviteUrl}`).join('\n'));
+      toast.success('All links copied');
+    } catch {
+      toast.error('Could not copy — select the links and copy them manually');
+    }
+  }
 
   function addEmails(candidates: string[]) {
     const invalid = candidates.filter((email) => !EMAIL_PATTERN.test(email));
@@ -73,8 +96,10 @@ export function InviteForm() {
     try {
       const result = await createInvites({ emails: pending, role }).unwrap();
       if (result.invited.length > 0) {
+        setCreated(result.invited);
+        setCopiedId(null);
         toast.success(
-          `Sent ${result.invited.length} invite${result.invited.length === 1 ? '' : 's'}`,
+          `Created ${result.invited.length} invite link${result.invited.length === 1 ? '' : 's'}`,
         );
       }
       result.skipped.forEach((skip) => toast.warning(`${skip.email}: ${skip.reason}`));
@@ -119,7 +144,7 @@ export function InviteForm() {
           />
         </div>
         <span className="text-xs text-text-muted">
-          Press Enter or comma to add. Each person gets a single-use link to set their password.
+          Press Enter or comma to add. Each person gets a single-use link you can copy and send.
         </span>
       </label>
 
@@ -139,10 +164,77 @@ export function InviteForm() {
           </select>
         </label>
         <Button type="submit" size="lg" disabled={isLoading} className="h-11">
-          <MailPlus className="h-4 w-4" />
-          {isLoading ? 'Sending…' : 'Send invites'}
+          <Link2 className="h-4 w-4" />
+          {isLoading ? 'Creating…' : 'Create invite links'}
         </Button>
       </div>
+
+      {created.length > 0 && (
+        <div className="flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-text">Invite links ready</p>
+              <p className="text-xs text-text-muted">
+                Copy each link and send it to the person. You won’t be able to see these links
+                again — to get a new one, invite the same email again.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCreated([])}
+              className="rounded p-1 text-text-muted hover:bg-bg-hover hover:text-text"
+              aria-label="Dismiss invite links"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <ul className="flex flex-col gap-2">
+            {created.map((invite) => (
+              <li
+                key={invite.id}
+                className="flex flex-col gap-2 rounded-md border border-border bg-bg p-2 sm:flex-row sm:items-center"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-text">{invite.email}</p>
+                  <input
+                    readOnly
+                    value={invite.inviteUrl}
+                    onFocus={(e) => e.target.select()}
+                    className="w-full truncate bg-transparent text-xs text-text-muted outline-none"
+                    aria-label={`Invite link for ${invite.email}`}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void copyLink(invite)}
+                >
+                  {copiedId === invite.id ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copiedId === invite.id ? 'Copied' : 'Copy link'}
+                </Button>
+              </li>
+            ))}
+          </ul>
+
+          {created.length > 1 && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => void copyAll()}
+              className="self-start"
+            >
+              <Copy className="h-4 w-4" /> Copy all links
+            </Button>
+          )}
+        </div>
+      )}
     </form>
   );
 }

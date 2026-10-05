@@ -98,7 +98,7 @@ export default function TeamPage() {
           <Can permission="users:manage">
             <Section
               title="Invite teammates"
-              description="We’ll email each person a secure link to set their password and join your organization."
+              description="Create a secure link for each person, then send it to them yourself. They use it to set a password and join."
             >
               <InviteForm />
             </Section>
