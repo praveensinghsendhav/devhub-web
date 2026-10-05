@@ -5,19 +5,33 @@ import { getDeviceId } from '../common/lib/deviceId';
 import { setCredentials, setUnauthenticated } from '../features/auth/authSlice';
 import type { RootState } from './store';
 
-/** The browser calls the API directly (NEXT_PUBLIC_API_URL, defaulted in next.config.mjs). */
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
+const prepareHeaders = (headers: Headers, { getState }: { getState: () => unknown }) => {
+  const token = (getState() as RootState).auth.accessToken;
+  if (token) headers.set('authorization', `Bearer ${token}`);
+  headers.set('x-device-id', getDeviceId());
+  return headers;
+};
 
-const rawBaseQuery = fetchBaseQuery({
-  baseUrl: API_URL,
-  credentials: 'include',
-  prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.accessToken;
-    if (token) headers.set('authorization', `Bearer ${token}`);
-    headers.set('x-device-id', getDeviceId());
-    return headers;
-  },
+/** Everything except auth calls the API directly (NEXT_PUBLIC_API_URL, defaulted in next.config.mjs). */
+const directQuery = fetchBaseQuery({
+  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/api`,
+  prepareHeaders,
 });
+
+/**
+ * Auth goes through this app's origin (rewritten to the API in next.config.mjs), so the refresh
+ * cookie is first-party and survives a page reload.
+ */
+const authQuery = fetchBaseQuery({ baseUrl: '/api', credentials: 'include', prepareHeaders });
+
+const rawBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = (
+  args,
+  api,
+  extraOptions,
+) => {
+  const url = typeof args === 'string' ? args : args.url;
+  return (url.startsWith('/auth/') ? authQuery : directQuery)(args, api, extraOptions);
+};
 
 let refreshPromise: Promise<{ user: AuthUser; tokens: AuthTokens } | null> | null = null;
 
