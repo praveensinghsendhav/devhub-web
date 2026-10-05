@@ -5,8 +5,8 @@ import { getDeviceId } from '../common/lib/deviceId';
 import { setCredentials, setUnauthenticated } from '../features/auth/authSlice';
 import type { RootState } from './store';
 
-/** Same-origin: requests go to this app's server-side gateway (app/api/[...path]/route.ts), never to the API directly. */
-const API_URL = '/api';
+/** The browser calls the API directly (NEXT_PUBLIC_API_URL, defaulted in next.config.mjs). */
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_URL,

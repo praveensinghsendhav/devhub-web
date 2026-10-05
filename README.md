@@ -50,9 +50,8 @@ apart. The only difference between the copies: the API's imports use `.js` suffi
 
 ## How it talks to the API
 
-- **REST:** RTK Query calls this app's own `/api/*`. `src/app/api/[...path]/route.ts` forwards each
-  request from the Next.js server to `API_INTERNAL_URL` (default `http://localhost:API_PORT`),
-  adding `INTERNAL_API_SECRET` when set. The browser never sees the API's address.
+- **REST and Socket.IO:** the browser calls the API directly at `NEXT_PUBLIC_API_URL` (default
+  `http://localhost:API_PORT`). The API lets this app's origin through CORS (`CLIENT_ORIGIN`).
 - **Auth:** the access token stays in memory (Redux), and the refresh token is an `httpOnly`
   cookie. A 401 triggers one refresh and a retry (`store/apiBase.ts`).
 - **Permissions** arrive from the API on login / `/auth/me`. Every check goes through
@@ -68,13 +67,12 @@ apart. The only difference between the copies: the API's imports use `.js` suffi
 
    | Variable              | Value                                                                                                            |
    | --------------------- | ---------------------------------------------------------------------------------------------------------------- |
-   | `API_INTERNAL_URL`    | the API's public URL, e.g. `https://devhub-api.up.railway.app`                                                   |
-   | `INTERNAL_API_SECRET` | same value as the API's                                                                                          |
-   | `NEXT_PUBLIC_WS_URL`  | the API URL again. The browser connects Socket.IO to it directly, because Vercel rewrites don't carry websockets |
+   | `NEXT_PUBLIC_API_URL` | the API's public URL, e.g. `https://devhub-api.up.railway.app`                                                   |
+   | `NEXT_PUBLIC_WS_URL`  | optional; only if Socket.IO lives at a different URL than the API                                                |
 
 3. Deploy, then set the Vercel URL as `CLIENT_ORIGIN` on the API.
 
-`NEXT_PUBLIC_WS_URL` is baked in at build time, so redeploy after changing it. `HOST_IP`,
+`NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_WS_URL` are baked in at build time, so redeploy after changing it. `HOST_IP`,
 `API_PORT`, `WEB_PORT` and `HTTPS` are local-only.
 
 ## Known gaps
