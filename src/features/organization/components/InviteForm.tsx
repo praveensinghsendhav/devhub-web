@@ -24,6 +24,16 @@ function splitEmails(raw: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Re-homes the API's invite link onto this web app's domain: NEXT_PUBLIC_APP_URL when set,
+ * otherwise the origin the admin is browsing on. Only the path + token come from the API.
+ */
+function clientInviteUrl(apiInviteUrl: string): string {
+  const base = (process.env.NEXT_PUBLIC_APP_URL || window.location.origin).replace(/\/+$/, '');
+  const { pathname, search } = new URL(apiInviteUrl);
+  return `${base}${pathname}${search}`;
+}
+
 export function InviteForm() {
   const [emails, setEmails] = useState<string[]>([]);
   const [draft, setDraft] = useState('');
@@ -96,7 +106,12 @@ export function InviteForm() {
     try {
       const result = await createInvites({ emails: pending, role }).unwrap();
       if (result.invited.length > 0) {
-        setCreated(result.invited);
+        setCreated(
+          result.invited.map((invite) => ({
+            ...invite,
+            inviteUrl: clientInviteUrl(invite.inviteUrl),
+          })),
+        );
         setCopiedId(null);
         toast.success(
           `Created ${result.invited.length} invite link${result.invited.length === 1 ? '' : 's'}`,

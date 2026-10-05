@@ -12,6 +12,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // Lets content reach under notches / home indicators; padded back with safe-area insets.
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f7f7fb' },
     { media: '(prefers-color-scheme: dark)', color: '#0c0c14' },

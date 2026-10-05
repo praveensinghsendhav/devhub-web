@@ -54,7 +54,7 @@ export function Modal({
               className,
             )}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+            <div className="flex items-start justify-between gap-4 border-b border-border px-4 py-4 sm:px-6">
               <div>
                 <h2 className="text-lg font-semibold text-text">{title}</h2>
                 {description && <p className="mt-0.5 text-sm text-text-muted">{description}</p>}
@@ -68,7 +68,7 @@ export function Modal({
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">{children}</div>
           </motion.div>
         </div>
       )}

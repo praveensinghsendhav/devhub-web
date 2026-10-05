@@ -81,7 +81,7 @@ export function MessageComposer({
 
   if (!conversation.canPost) {
     return (
-      <div className="px-3 pb-3 sm:px-5 sm:pb-5">
+      <div className="px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-5 sm:pb-5">
         <div className="glass-panel flex items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm text-text-muted">
           <Lock className="h-4 w-4" />
           {conversation.type === 'broadcast'
@@ -175,7 +175,7 @@ export function MessageComposer({
   const remaining = MESSAGE_MAX_LENGTH - body.length;
 
   return (
-    <div className="px-3 pb-3 sm:px-5 sm:pb-5">
+    <div className="px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-5 sm:pb-5">
       <div className="glass-panel relative rounded-3xl shadow-2xl shadow-black/20 focus-within:border-primary/50 focus-within:shadow-primary/15">
         <AnimatePresence initial={false}>
           {banner && (

@@ -54,7 +54,7 @@ export function QualityMenu({ placement = 'up' }: { placement?: 'up' | 'down' })
             exit={{ opacity: 0, y: placement === 'up' ? 6 : -6 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              'absolute left-1/2 z-30 w-72 -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-bg-elevated p-1.5 shadow-2xl',
+              'absolute left-1/2 z-30 w-72 max-w-[calc(100vw-1.5rem)] -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-bg-elevated p-1.5 shadow-2xl',
               placement === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',
             )}
           >

@@ -30,15 +30,16 @@ export function ActiveCallDock() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
-            className="glass-panel fixed right-4 bottom-4 z-50 flex items-center gap-2 rounded-2xl py-2 pr-2 pl-4 shadow-2xl shadow-black/40"
+            // On phones it spans the width and sits above the bottom tab bar.
+            className="glass-panel fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-50 flex items-center gap-2 rounded-2xl py-2 pr-2 pl-4 shadow-2xl shadow-black/40 md:inset-x-auto md:right-4 md:bottom-4"
           >
             <span className="h-2 w-2 animate-pulse rounded-full bg-online" />
             <button
               type="button"
               onClick={() => router.push(`/meeting/${meetingId}`)}
-              className="min-w-0 text-left"
+              className="min-w-0 flex-1 text-left md:flex-none"
             >
-              <span className="block max-w-40 truncate text-sm font-semibold text-text">
+              <span className="block truncate md:max-w-40 text-sm font-semibold text-text">
                 {title}
               </span>
               <span className="block text-xs text-text-muted">

@@ -16,14 +16,14 @@ import { StatusPicker } from '../../features/presence/StatusPicker';
 import { useListMeetingInvitationsQuery } from '../../features/meetings/meetingsApi';
 import { useMeetingSession } from '../../features/meetings/useMeetingSession';
 
-interface NavItem {
+export interface NavItem {
   href: string;
   label: string;
   icon: typeof MessageSquare;
   permission: Permission;
 }
 
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { href: '/chat', label: 'Chat', icon: MessageSquare, permission: 'chat:read' },
   { href: '/whiteboard', label: 'Whiteboard', icon: PenSquare, permission: 'whiteboard:read' },
   { href: '/meeting', label: 'Meetings', icon: Video, permission: 'meeting:read' },
@@ -42,7 +42,8 @@ function usePendingInvitations(enabled: boolean): number {
   return data?.length ?? 0;
 }
 
-function NavLink({ item }: { item: NavItem }) {
+/** Shared by the desktop sidebar and the mobile tab bar. */
+export function useNavItemState(item: NavItem) {
   const pathname = usePathname();
   const allowed = useCan(item.permission);
   const active = pathname.startsWith(item.href);
@@ -50,6 +51,11 @@ function NavLink({ item }: { item: NavItem }) {
   const invitations = usePendingInvitations(allowed && item.href === '/calendar');
   const unread = item.href === '/chat' ? unreadChat : item.href === '/calendar' ? invitations : 0;
   const inCall = useMeetingSession((s) => s.phase === 'in-call') && item.href === '/meeting';
+  return { allowed, active, unread, inCall };
+}
+
+function NavLink({ item }: { item: NavItem }) {
+  const { allowed, active, unread, inCall } = useNavItemState(item);
 
   if (!allowed) return null;
 
@@ -95,7 +101,7 @@ export function Sidebar() {
   if (!user) return null;
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-border bg-bg-elevated px-3 py-4">
+    <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-border bg-bg-elevated px-3 py-4 md:flex">
       <div className="px-2 pb-6">
         <Logo href="/chat" />
         {user.organization && (

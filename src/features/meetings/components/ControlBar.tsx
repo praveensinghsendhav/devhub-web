@@ -201,7 +201,7 @@ export function ControlBar({
   return (
     // Wraps instead of scrolling: an overflow container would clip the menus that open above the
     // bar (leave/end, reactions, quality), leaving the host's hang-up button looking dead.
-    <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 px-3 pt-2 pb-3 sm:gap-3">
+    <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:gap-3">
       <RoundButton
         onClick={() => void meetingSession.setAudio(!audio)}
         active={audio}
